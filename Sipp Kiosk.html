@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sipp — Okanagan Wine Passport · iPad Kiosk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Libre+Caslon+Display&family=Lato:wght@300;400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="kiosk.css" />
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="kiosk-data.js"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="kiosk-ui.jsx"></script>
+<script type="text/babel" src="kiosk-card.jsx"></script>
+<script type="text/babel" src="kiosk-screens.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+const PRICE = "$";
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "style": "noir",
+  "layout": "split",
+  "accent": "#C4773B",
+  "font": "Playfair Display",
+  "hint": true
+}/*EDITMODE-END*/;
+
+const SCREENS = ["attract", "welcome", "lookbook", "summary", "transfer", "success"];
+
+function useScale(w, h, pad = 36) {
+  const [s, setS] = useState(1);
+  const ref = useRef(null);
+  useEffect(() => {
+    const fit = () => {
+      const el = ref.current;
+      const cw = (el ? el.clientWidth : window.innerWidth) || window.innerWidth;
+      const ch = (el ? el.clientHeight : window.innerHeight) || window.innerHeight;
+      if (cw <= 0 || ch <= 0) return;             // ignore pre-layout zero sizes
+      const next = Math.min((cw - pad) / w, (ch - pad) / h, 1);
+      if (next > 0) setS(next);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    if (ref.current) ro.observe(ref.current);
+    window.addEventListener("resize", fit);
+    return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
+  }, [w, h]);
+  return [s, ref];
+}
+
+/* ---------------- Lookbook (swipeable core) ---------------- */
+function Lookbook({ wines, taste, setTaste, layout, showHint, onPicks, scale }) {
+  const [idx, setIdx] = useState(0);
+  const [drag, setDrag] = useState(0);          // fractional drag (-1..1 of a slide)
+  const start = useRef(null);
+  const moved = useRef(false);
+  const slidePx = 1180 * scale;
+  const last = wines.length - 1;
+
+  const go = (n) => setIdx(Math.max(0, Math.min(last, n)));
+
+  const down = (e) => { start.current = (e.touches ? e.touches[0].clientX : e.clientX); moved.current = false; };
+  const move = (e) => {
+    if (start.current == null) return;
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    let dx = (x - start.current) / slidePx;
+    if (Math.abs(dx) > 0.01) moved.current = true;
+    if ((idx === 0 && dx > 0) || (idx === last && dx < 0)) dx *= 0.35; // rubber-band ends
+    setDrag(dx);
+  };
+  const up = () => {
+    if (start.current == null) return;
+    if (drag < -0.16) { idx === last ? onPicks() : go(idx + 1); }
+    else if (drag > 0.16) { go(idx - 1); }
+    start.current = null; setDrag(0);
+  };
+
+  useEffect(() => {
+    const k = (e) => { if (e.key === "ArrowRight") go(idx + 1); if (e.key === "ArrowLeft") go(idx - 1); };
+    addEventListener("keydown", k); return () => removeEventListener("keydown", k);
+  }, [idx]);
+
+  const set = (id, patch) => setTaste((t) => ({ ...t, [id]: { ...t[id], ...patch } }));
+
+  return (
+    <div className="screen lookbook">
+      <div className="swipe-top">
+        <span className="lb-winery"><Monogram text={WINERY.mark} size={32} filled /> {WINERY.name}</span>
+        <span style={{ display: "flex", gap: 12, alignItems: "center", pointerEvents: "auto" }}>
+          <span className="lb-counter">{String(idx + 1).padStart(2, "0")} / {String(wines.length).padStart(2, "0")}</span>
+          <button className="lb-picks" onClick={onPicks}>See my picks</button>
+        </span>
+      </div>
+
+      <button className={"nav-arrow left" + (idx === 0 ? " hide" : "")} onClick={() => go(idx - 1)} aria-label="Previous">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6" /></svg>
+      </button>
+      <button className="nav-arrow right" onClick={() => idx === last ? onPicks() : go(idx + 1)} aria-label="Next">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+      </button>
+
+      <div
+        className="track"
+        style={{
+          transform: `translateX(${(-idx + drag) * 100}%)`,
+          transition: start.current == null ? "transform .5s cubic-bezier(.2,.8,.2,1)" : "none",
+        }}
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onPointerLeave={up}
+        onTouchStart={down} onTouchMove={move} onTouchEnd={up}
+      >
+        {wines.map((w, i) => {
+          const st = taste[w.id] || {};
+          return (
+            <div className="slide" key={w.id}>
+              <WineCard
+                wine={w} idx={i} total={wines.length} st={st} layout={layout} priceLabel={PRICE}
+                showHint={showHint}
+                onTry={() => set(w.id, { tried: !st.tried, rating: st.rating || (!st.tried ? 0 : st.rating) })}
+                onFav={() => set(w.id, { fav: !st.fav })}
+                onRate={(r) => set(w.id, { tried: true, rating: r })}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- App ---------------- */
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [screen, setScreen] = useState("attract");
+  const [name, setName] = useState("");
+  const [taste, setTaste] = useState({});
+  const [scale, stageRef] = useScale(1220, 860);
+
+  const reset = () => { setTaste({}); setName(""); setScreen("attract"); };
+  const go = (s) => setScreen(s);
+
+  return (
+    <div id="stage" ref={stageRef}>
+      <div className="scaler" style={{ transform: `scale(${scale})` }}>
+        <div className="ipad">
+          <div className="screen-area" data-style={t.style}
+               style={{ "--accent": t.accent, "--display": `"${t.font}"` }}>
+            {screen === "attract" && <AttractScreen onBegin={() => go("welcome")} priceLabel={PRICE} />}
+            {screen === "welcome" && <WelcomeScreen name={name} setName={setName} wineCount={WINES.length} onStart={() => go("lookbook")} />}
+            {screen === "lookbook" && (
+              <Lookbook wines={WINES} taste={taste} setTaste={setTaste} layout={t.layout}
+                        showHint={t.hint} scale={scale} onPicks={() => go("summary")} />
+            )}
+            {screen === "summary" && (
+              <SummaryScreen wines={WINES} state={taste} name={name} priceLabel={PRICE}
+                             onEdit={() => go("lookbook")} onSave={() => go("transfer")} />
+            )}
+            {screen === "transfer" && <TransferScreen name={name} onConfirm={() => go("success")} />}
+            {screen === "success" && <SuccessScreen wines={WINES} state={taste} name={name} priceLabel={PRICE} onReset={reset} />}
+          </div>
+        </div>
+      </div>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Visual style" />
+        <TweakRadio label="Mood" value={t.style} options={[
+          { value: "noir", label: "Noir" }, { value: "dusk", label: "Dusk" }, { value: "cream", label: "Cream" },
+        ]} onChange={(v) => setTweak("style", v)} />
+        <TweakColor label="Accent" value={t.accent}
+          options={["#C4773B", "#B85C2B", "#CFA24E", "#A8503A"]}
+          onChange={(v) => setTweak("accent", v)} />
+        <TweakSelect label="Display font" value={t.font}
+          options={["Playfair Display", "Cormorant Garamond", "Libre Caslon Display"]}
+          onChange={(v) => setTweak("font", v)} />
+
+        <TweakSection label="Wine card layout" />
+        <TweakRadio label="Layout" value={t.layout} options={[
+          { value: "split", label: "Split" }, { value: "immersive", label: "Immersive" }, { value: "gallery", label: "Gallery" },
+        ]} onChange={(v) => setTweak("layout", v)} />
+        <TweakToggle label="Swipe hint" value={t.hint} onChange={(v) => setTweak("hint", v)} />
+
+        <TweakSection label="Demo controls" />
+        <TweakSelect label="Jump to screen" value={screen}
+          options={SCREENS.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))}
+          onChange={(v) => setScreen(v)} />
+        <TweakButton label="Reset session" onClick={reset} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
