@@ -1,6 +1,18 @@
 // Wine Lookbook card with 3 layout variants: split / immersive / gallery.
 const { useState: useStateC } = React;
 
+function WineImage({ wine, style, radius = 0 }) {
+  if (wine.imageUrl) {
+    return (
+      <img
+        src={wine.imageUrl} alt={wine.name}
+        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: radius, display: "block", ...style }}
+      />
+    );
+  }
+  return <Placeholder label={wine.placeholder} tint={wine.color} radius={radius} style={style} />;
+}
+
 function Pill({ children }) { return <span className="note-pill">{children}</span>; }
 
 function TastingNotes({ wine }) {
@@ -69,7 +81,7 @@ function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint
         </div>
         <h1 className="gal-name">{wine.name}</h1>
         <div className="gal-stage">
-          <Placeholder label={wine.placeholder} tint={wine.color} radius={10} style={{ width: 168, height: 360 }} />
+          <WineImage wine={wine} radius={10} style={{ width: 168, height: 360 }} />
         </div>
         <TastingNotes wine={wine} />
         <p className="gal-wm">“{wine.winemaker}”</p>
@@ -87,7 +99,7 @@ function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint
     return (
       <div className="card immersive">
         <div className="imm-visual">
-          <Placeholder label={wine.placeholder} tint={wine.color} style={{ position: "absolute", inset: 0 }} />
+          <WineImage wine={wine} style={{ position: "absolute", inset: 0 }} />
           <div className="imm-scrim" />
           <div className="imm-title">
             {wine.award && <span className="award light">✦ {wine.award}</span>}
@@ -113,7 +125,7 @@ function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint
   return (
     <div className="card split">
       <div className="split-visual">
-        <Placeholder label={wine.placeholder} tint={wine.color} style={{ position: "absolute", inset: 0 }} />
+        <WineImage wine={wine} style={{ position: "absolute", inset: 0 }} />
         <div className="split-scrim" />
         <div className="split-overlay">
           {wine.award && <span className="award light">✦ {wine.award}</span>}
@@ -146,4 +158,4 @@ function SwipeHint() {
   );
 }
 
-Object.assign(window, { WineCard });
+Object.assign(window, { WineCard, WineImage });

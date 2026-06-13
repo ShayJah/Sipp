@@ -1,15 +1,15 @@
 // Non-lookbook screens: Attract, Welcome, Summary, Transfer, Success (+ phone handoff).
 const { useState: useStateS, useEffect: useEffectS } = React;
 
-function AttractScreen({ onBegin, priceLabel }) {
+function AttractScreen({ onBegin, priceLabel, winery }) {
   return (
     <div className="screen attract" onClick={onBegin}>
       <Placeholder label="VINEYARD · KEN BURNS LOOP" tint="#7a3b2e" style={{ position: "absolute", inset: 0 }} />
       <div className="attract-kb" />
       <div className="attract-scrim" />
       <div className="brand-corner">
-        <Monogram text={WINERY.mark} size={46} filled />
-        <span className="brand-corner-name">{WINERY.name}</span>
+        <Monogram text={winery.mark} size={46} filled />
+        <span className="brand-corner-name">{winery.name}</span>
       </div>
       <div className="attract-center">
         <span className="attract-kicker">— Tasting Experience —</span>
@@ -21,14 +21,14 @@ function AttractScreen({ onBegin, priceLabel }) {
   );
 }
 
-function WelcomeScreen({ name, setName, onStart, wineCount }) {
+function WelcomeScreen({ name, setName, onStart, wineCount, winery }) {
   return (
     <div className="screen welcome">
       <div className="welcome-bg" />
       <div className="welcome-inner">
-        <Monogram text={WINERY.mark} size={88} filled />
-        <h1 className="welcome-name">{WINERY.name}</h1>
-        <p className="welcome-tag">{WINERY.tagline}</p>
+        <Monogram text={winery.mark} size={88} filled />
+        <h1 className="welcome-name">{winery.name}</h1>
+        <p className="welcome-tag">{winery.tagline}</p>
         <div className="welcome-rule"><span /><span className="diamond">◆</span><span /></div>
         <span className="menu-kicker">Today's tasting menu</span>
         <div className="menu-count"><b>{wineCount}</b> wines to explore</div>
@@ -46,14 +46,14 @@ function WelcomeScreen({ name, setName, onStart, wineCount }) {
   );
 }
 
-function SummaryScreen({ wines, state, name, onEdit, onSave, priceLabel }) {
+function SummaryScreen({ wines, state, name, onEdit, onSave, priceLabel, winery }) {
   const tried = wines.filter((w) => state[w.id]?.tried).length;
   const favs = wines.filter((w) => state[w.id]?.fav).length;
   return (
     <div className="screen summary">
       <div className="sum-head">
         <span className="sum-kicker">Your tasting tonight</span>
-        <h1 className="sum-title">{name ? `${name}'s flight` : "Your flight"} at {WINERY.name}</h1>
+        <h1 className="sum-title">{name ? `${name}'s flight` : "Your flight"} at {winery.name}</h1>
         <div className="sum-stat">You tried <b>{tried}</b> of {wines.length} · <b>{favs}</b> favourited</div>
       </div>
       <div className="sum-list">
@@ -61,7 +61,7 @@ function SummaryScreen({ wines, state, name, onEdit, onSave, priceLabel }) {
           const s = state[w.id] || {};
           return (
             <div className={"sum-row" + (s.tried ? "" : " untried")} key={w.id} onClick={() => onEdit(w.id)}>
-              <div className="sum-thumb"><Placeholder label="" tint={w.color} radius={8} /></div>
+              <div className="sum-thumb"><WineImage wine={w} radius={8} style={{ position: "absolute", inset: 0 }} /></div>
               <div className="sum-info">
                 <span className="sum-wine">{w.name}</span>
                 <span className="sum-grape">{w.vintage} · {w.grape}</span>
@@ -116,7 +116,7 @@ function TransferScreen({ onConfirm, name }) {
   );
 }
 
-function SuccessScreen({ wines, state, name, onReset, priceLabel }) {
+function SuccessScreen({ wines, state, name, onReset, priceLabel, winery }) {
   const [phase, setPhase] = useStateS(0);
   useEffectS(() => {
     const a = setTimeout(() => setPhase(1), 480);   // check pops
@@ -149,9 +149,9 @@ function SuccessScreen({ wines, state, name, onReset, priceLabel }) {
           <div className="mp-notch" />
           <div className="mp-screen">
             <div className="mp-top">
-              <Monogram text={WINERY.mark} size={30} filled />
+              <Monogram text={winery.mark} size={30} filled />
               <span className="mp-hi">{name ? `Welcome, ${name}` : "Welcome"}</span>
-              <span className="mp-sub">Here's what you tried at<br/>{WINERY.name}</span>
+              <span className="mp-sub">Here's what you tried at<br/>{winery.name}</span>
             </div>
             <div className="mp-list">
               {showWines.map((w, i) => {

@@ -61,7 +61,7 @@ function useScale(w, h, pad = 36) {
 }
 
 /* ---------------- Lookbook (swipeable core) ---------------- */
-function Lookbook({ wines, taste, setTaste, layout, showHint, onPicks, scale }) {
+function Lookbook({ wines, taste, setTaste, layout, showHint, onPicks, scale, winery }) {
   const [idx, setIdx] = useState(0);
   const [drag, setDrag] = useState(0);          // fractional drag (-1..1 of a slide)
   const start = useRef(null);
@@ -97,7 +97,7 @@ function Lookbook({ wines, taste, setTaste, layout, showHint, onPicks, scale }) 
   return (
     <div className="screen lookbook">
       <div className="swipe-top">
-        <span className="lb-winery"><Monogram text={WINERY.mark} size={32} filled /> {WINERY.name}</span>
+        <span className="lb-winery"><Monogram text={winery.mark} size={32} filled /> {winery.name}</span>
         <span style={{ display: "flex", gap: 12, alignItems: "center", pointerEvents: "auto" }}>
           <span className="lb-counter">{String(idx + 1).padStart(2, "0")} / {String(wines.length).padStart(2, "0")}</span>
           <button className="lb-picks" onClick={onPicks}>See my picks</button>
@@ -146,9 +146,35 @@ function App() {
   const [name, setName] = useState("");
   const [taste, setTaste] = useState({});
   const [scale, stageRef] = useScale(1220, 860);
+  const [winery, setWinery] = useState(window.WINERY);
+  const [wines, setWines] = useState(window.WINES);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const slug = new URLSearchParams(location.search).get("winery");
+    if (!slug) return;
+    setLoading(true);
+    fetch(`/api/winery?slug=${encodeURIComponent(slug)}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(d => { setWinery(d.winery); setWines(d.wines); })
+      .catch(err => console.warn("Winery load failed:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const reset = () => { setTaste({}); setName(""); setScreen("attract"); };
   const go = (s) => setScreen(s);
+
+  if (loading) return (
+    <div id="stage" ref={stageRef}>
+      <div className="scaler" style={{ transform: `scale(${scale})` }}>
+        <div className="ipad">
+          <div className="screen-area" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ color: "#C4773B", opacity: 0.7, fontSize: 18 }}>Loading…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div id="stage" ref={stageRef}>
@@ -156,18 +182,18 @@ function App() {
         <div className="ipad">
           <div className="screen-area" data-style={t.style}
                style={{ "--accent": t.accent, "--display": `"${t.font}"` }}>
-            {screen === "attract" && <AttractScreen onBegin={() => go("welcome")} priceLabel={PRICE} />}
-            {screen === "welcome" && <WelcomeScreen name={name} setName={setName} wineCount={WINES.length} onStart={() => go("lookbook")} />}
+            {screen === "attract" && <AttractScreen onBegin={() => go("welcome")} priceLabel={PRICE} winery={winery} />}
+            {screen === "welcome" && <WelcomeScreen name={name} setName={setName} wineCount={wines.length} onStart={() => go("lookbook")} winery={winery} />}
             {screen === "lookbook" && (
-              <Lookbook wines={WINES} taste={taste} setTaste={setTaste} layout={t.layout}
+              <Lookbook wines={wines} taste={taste} setTaste={setTaste} layout={t.layout} winery={winery}
                         showHint={t.hint} scale={scale} onPicks={() => go("summary")} />
             )}
             {screen === "summary" && (
-              <SummaryScreen wines={WINES} state={taste} name={name} priceLabel={PRICE}
+              <SummaryScreen wines={wines} state={taste} name={name} priceLabel={PRICE} winery={winery}
                              onEdit={() => go("lookbook")} onSave={() => go("transfer")} />
             )}
             {screen === "transfer" && <TransferScreen name={name} onConfirm={() => go("success")} />}
-            {screen === "success" && <SuccessScreen wines={WINES} state={taste} name={name} priceLabel={PRICE} onReset={reset} />}
+            {screen === "success" && <SuccessScreen wines={wines} state={taste} name={name} priceLabel={PRICE} winery={winery} onReset={reset} />}
           </div>
         </div>
       </div>
