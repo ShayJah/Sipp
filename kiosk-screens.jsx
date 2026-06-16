@@ -83,7 +83,7 @@ function SummaryScreen({ wines = [], state, name, onEdit, onSave, priceLabel, wi
           const s = state[w.id] || {};
           return (
             <div className={"sum-row" + (s.tried ? "" : " untried")} key={w.id} onClick={() => onEdit(w.id)}>
-              <div className="sum-thumb"><WineImage wine={w} radius={8} style={{ position: "absolute", inset: 0 }} /></div>
+              <div className="sum-thumb" style={{ position: "relative" }}><WineImage wine={w} radius={8} style={{ position: "absolute", inset: 0 }} /></div>
               <div className="sum-info">
                 <span className="sum-wine">{w.name}</span>
                 <span className="sum-grape">{w.vintage} · {w.grape}</span>
