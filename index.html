@@ -156,7 +156,7 @@ function App() {
     setLoading(true);
     fetch(`/api/winery?slug=${encodeURIComponent(slug)}`)
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(d => { setWinery(d.winery); setWines(d.wines || []); })
+      .then(d => { if (d.winery) setWinery(d.winery); if (d.wines?.length) setWines(d.wines); })
       .catch(err => console.warn("Winery load failed:", err))
       .finally(() => setLoading(false));
   }, []);
