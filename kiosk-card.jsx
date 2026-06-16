@@ -71,23 +71,25 @@ function Badge({ wine }) {
 function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint, priceLabel }) {
   const handlers = { wine, idx, total, st, onTry, onFav, onRate };
 
-  if (layout === "gallery") {
+  if (layout === “gallery”) {
     return (
-      <div className="card gallery">
-        <div className="gal-glow" style={{ background: `radial-gradient(closest-side, ${wine.color}55, transparent 72%)` }} />
-        <div className="gal-top">
+      <div className=”card gallery”>
+        <div className=”gal-glow” style={{ background: `radial-gradient(closest-side, ${wine.color || “#C4773B”}55, transparent 72%)` }} />
+        <div className=”gal-top”>
           <Badge wine={wine} />
-          {wine.award && <span className="award">✦ {wine.award}</span>}
+          {wine.award && <span className=”award”>✦ {wine.award}</span>}
         </div>
-        <h1 className="gal-name">{wine.name}</h1>
-        <div className="gal-stage">
-          <WineImage wine={wine} radius={10} style={{ width: 168, height: 360 }} />
+        <h1 className=”gal-name”>{wine.name}</h1>
+        <div className=”gal-stage”>
+          {wine.imageUrl
+            ? <img src={wine.imageUrl} alt={wine.name} className=”bottle-img gal-bottle” />
+            : <Placeholder label={wine.placeholder || “”} tint={wine.color || “#C4773B”} radius={10} style={{ width: 168, height: 340 }} />}
         </div>
         <TastingNotes wine={wine} />
-        <p className="gal-wm">“{wine.winemaker}”</p>
-        <div className="gal-foot">
-          <span className="meta-v"><span className="pair-ico">{wine.pairingIcon}</span>{wine.pairing}</span>
-          <span className="price">{priceLabel}{wine.price}</span>
+        <p className=”gal-wm”>”{wine.winemaker}”</p>
+        <div className=”gal-foot”>
+          <span className=”meta-v”><span className=”pair-ico”>{wine.pairingIcon}</span>{wine.pairing}</span>
+          <span className=”price”>{priceLabel}{wine.price}</span>
         </div>
         <ActionBar {...handlers} />
         {idx === 0 && showHint && <SwipeHint />}
@@ -95,24 +97,28 @@ function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint
     );
   }
 
-  if (layout === "immersive") {
+  if (layout === “immersive”) {
     return (
-      <div className="card immersive">
-        <div className="imm-visual">
-          <WineImage wine={wine} style={{ position: "absolute", inset: 0 }} />
-          <div className="imm-scrim" />
-          <div className="imm-title">
-            {wine.award && <span className="award light">✦ {wine.award}</span>}
-            <h1 className="big-name">{wine.name}</h1>
+      <div className=”card immersive”>
+        <div className=”imm-visual”>
+          {/* colour-wash bg from wine tint */}
+          <div className=”card-bg” style={{ background: `radial-gradient(ellipse 140% 100% at 50% -10%, color-mix(in oklch, ${wine.color || “#C4773B”} 28%, var(--bg)), var(--bg) 72%)` }} />
+          {wine.imageUrl
+            ? <div className=”imm-bottle”><img src={wine.imageUrl} alt={wine.name} className=”bottle-img” /></div>
+            : <Placeholder label={wine.placeholder || “”} tint={wine.color || “#C4773B”} style={{ position: “absolute”, inset: 0, zIndex: 1 }} />}
+          <div className=”imm-scrim” />
+          <div className=”imm-title”>
+            {wine.award && <span className=”award light”>✦ {wine.award}</span>}
+            <h1 className=”big-name”>{wine.name}</h1>
             <Badge wine={wine} />
           </div>
         </div>
-        <aside className="imm-panel">
-          <div className="imm-scroll">
-            <span className="panel-label">Tasting notes</span>
+        <aside className=”imm-panel”>
+          <div className=”imm-scroll”>
+            <span className=”panel-label”>Tasting notes</span>
             <TastingNotes wine={wine} />
             <MetaBlock wine={wine} />
-            <div className="price-line"><span>Bottle</span><span className="price">{priceLabel}{wine.price}</span></div>
+            <div className=”price-line”><span>Bottle</span><span className=”price”>{priceLabel}{wine.price}</span></div>
           </div>
           <ActionBar {...handlers} />
         </aside>
@@ -123,22 +129,26 @@ function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint
 
   // split (default)
   return (
-    <div className="card split">
-      <div className="split-visual">
-        <WineImage wine={wine} style={{ position: "absolute", inset: 0 }} />
-        <div className="split-scrim" />
-        <div className="split-overlay">
-          {wine.award && <span className="award light">✦ {wine.award}</span>}
-          <h1 className="big-name">{wine.name}</h1>
+    <div className=”card split”>
+      <div className=”split-visual”>
+        {/* colour-wash bg from wine tint */}
+        <div className=”card-bg” style={{ background: `radial-gradient(ellipse 120% 90% at 50% -5%, color-mix(in oklch, ${wine.color || “#C4773B”} 26%, var(--bg)), var(--bg) 68%)` }} />
+        {wine.imageUrl
+          ? <div className=”split-bottle”><img src={wine.imageUrl} alt={wine.name} className=”bottle-img” /></div>
+          : <Placeholder label={wine.placeholder || “”} tint={wine.color || “#C4773B”} style={{ position: “absolute”, inset: 0, zIndex: 1 }} />}
+        <div className=”split-scrim” />
+        <div className=”split-overlay”>
+          {wine.award && <span className=”award light”>✦ {wine.award}</span>}
+          <h1 className=”big-name”>{wine.name}</h1>
           <Badge wine={wine} />
         </div>
       </div>
-      <aside className="split-panel">
-        <div className="split-scroll">
-          <span className="panel-label">Tasting notes</span>
+      <aside className=”split-panel”>
+        <div className=”split-scroll”>
+          <span className=”panel-label”>Tasting notes</span>
           <TastingNotes wine={wine} />
           <MetaBlock wine={wine} />
-          <div className="price-line"><span>Bottle</span><span className="price">{priceLabel}{wine.price}</span></div>
+          <div className=”price-line”><span>Bottle</span><span className=”price”>{priceLabel}{wine.price}</span></div>
         </div>
         <ActionBar {...handlers} />
       </aside>
