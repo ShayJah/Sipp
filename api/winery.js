@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
       type:         f.Type         || "Wine",
       color:        f.Color        || "#C4773B",
       region:       f.Region       || "",
-      notes:        (f.Notes || "").split(",").map(n => n.trim()).filter(Boolean),
+      notes:        Array.isArray(f.Notes) ? f.Notes : (f.Notes || "").split(",").map(n => n.trim()).filter(Boolean),
       winemaker:    f.WinemakerNote || "",
       pairing:      f.Pairing      || "",
       pairingIcon:  f.PairingIcon  || "🍷",

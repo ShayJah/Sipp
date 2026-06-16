@@ -389,13 +389,11 @@ h1, .display { font-family: var(--display, "Playfair Display"), serif; font-weig
   filter: drop-shadow(0 18px 36px rgba(0,0,0,.65));
 }
 
-/* z-index layering for split */
-.split-scrim  { z-index: 2; }
+/* z-index layering — bottle (3) floats above scrim/overlay (2) */
+.split-scrim   { z-index: 1; }
 .split-overlay { z-index: 2; }
-
-/* z-index layering for immersive */
-.imm-scrim { z-index: 2; }
-.imm-title { z-index: 2; }
+.imm-scrim     { z-index: 1; }
+.imm-title     { z-index: 2; }
 
 /* ---- scrollbars ---- */
 .split-scroll::-webkit-scrollbar, .imm-scroll::-webkit-scrollbar, .sum-list::-webkit-scrollbar, .mp-list::-webkit-scrollbar { width: 5px; }
