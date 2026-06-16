@@ -10,7 +10,7 @@ function WineImage({ wine, style, radius = 0 }) {
       />
     );
   }
-  return <Placeholder label={wine.placeholder} tint={wine.color} radius={radius} style={style} />;
+  return <Placeholder label={wine.placeholder || ""} tint={wine.color || "#C4773B"} radius={radius} style={style} />;
 }
 
 function Pill({ children }) { return <span className="note-pill">{children}</span>; }
@@ -18,7 +18,7 @@ function Pill({ children }) { return <span className="note-pill">{children}</spa
 function TastingNotes({ wine }) {
   return (
     <div className="notes-row">
-      {wine.notes.map((nt) => <Pill key={nt}>{nt}</Pill>)}
+      {(wine.notes || []).map((nt) => <Pill key={nt}>{nt}</Pill>)}
     </div>
   );
 }

@@ -147,7 +147,7 @@ function App() {
   const [taste, setTaste] = useState({});
   const [scale, stageRef] = useScale(1220, 860);
   const [winery, setWinery] = useState(window.WINERY);
-  const [wines, setWines] = useState(window.WINES);
+  const [wines, setWines] = useState(window.WINES || []);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -156,7 +156,7 @@ function App() {
     setLoading(true);
     fetch(`/api/winery?slug=${encodeURIComponent(slug)}`)
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(d => { setWinery(d.winery); setWines(d.wines); })
+      .then(d => { setWinery(d.winery); setWines(d.wines || []); })
       .catch(err => console.warn("Winery load failed:", err))
       .finally(() => setLoading(false));
   }, []);

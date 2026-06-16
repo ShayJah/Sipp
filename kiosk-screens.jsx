@@ -68,9 +68,9 @@ function WelcomeScreen({ name, setName, onStart, wineCount, winery }) {
   );
 }
 
-function SummaryScreen({ wines, state, name, onEdit, onSave, priceLabel, winery }) {
+function SummaryScreen({ wines = [], state, name, onEdit, onSave, priceLabel, winery }) {
   const tried = wines.filter((w) => state[w.id]?.tried).length;
-  const favs = wines.filter((w) => state[w.id]?.fav).length;
+  const favs  = wines.filter((w) => state[w.id]?.fav).length;
   return (
     <div className="screen summary">
       <div className="sum-head">
@@ -138,15 +138,15 @@ function TransferScreen({ onConfirm, name }) {
   );
 }
 
-function SuccessScreen({ wines, state, name, onReset, priceLabel, winery }) {
+function SuccessScreen({ wines = [], state, name, onReset, priceLabel, winery }) {
   const [phase, setPhase] = useStateS(0);
   useEffectS(() => {
-    const a = setTimeout(() => setPhase(1), 480);   // check pops
-    const b = setTimeout(() => setPhase(2), 1180);  // phone slides in
+    const a = setTimeout(() => setPhase(1), 480);
+    const b = setTimeout(() => setPhase(2), 1180);
     return () => { clearTimeout(a); clearTimeout(b); };
   }, []);
   const triedWines = wines.filter((w) => state[w.id]?.tried);
-  const showWines = (triedWines.length ? triedWines : wines).slice(0, 4);
+  const showWines  = (triedWines.length ? triedWines : wines).slice(0, 4);
   return (
     <div className="screen success">
       <div className="succ-left">
