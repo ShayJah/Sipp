@@ -50,11 +50,12 @@ module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
   res.json({
     winery: {
-      name:    wf.Name    || "",
-      mark:    wf.Mark    || "",
-      region:  wf.Region  || "",
-      tagline: wf.Tagline || "",
-      blurb:   wf.Blurb   || "",
+      name:     wf.Name              || "",
+      mark:     wf.Mark              || "",
+      region:   wf.Region            || "",
+      tagline:  wf.Tagline           || "",
+      blurb:    wf.Blurb             || "",
+      videoUrl: wf.HeroVideo?.[0]?.url || null,
     },
     wines,
     nextWineries: [],

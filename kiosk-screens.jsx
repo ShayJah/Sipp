@@ -1,11 +1,33 @@
 // Non-lookbook screens: Attract, Welcome, Summary, Transfer, Success (+ phone handoff).
-const { useState: useStateS, useEffect: useEffectS } = React;
+const { useState: useStateS, useEffect: useEffectS, useRef: useRefS } = React;
+
+function HeroBg({ winery }) {
+  const ref = useRefS(null);
+  useEffectS(() => {
+    if (ref.current) ref.current.play().catch(() => {});
+  }, []);
+  if (winery.videoUrl) {
+    return (
+      <video
+        ref={ref}
+        src={winery.videoUrl}
+        autoPlay loop muted playsInline
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+      />
+    );
+  }
+  return (
+    <>
+      <Placeholder label="VINEYARD · KEN BURNS LOOP" tint="#7a3b2e" style={{ position: "absolute", inset: 0 }} />
+      <div className="attract-kb" />
+    </>
+  );
+}
 
 function AttractScreen({ onBegin, priceLabel, winery }) {
   return (
     <div className="screen attract" onClick={onBegin}>
-      <Placeholder label="VINEYARD · KEN BURNS LOOP" tint="#7a3b2e" style={{ position: "absolute", inset: 0 }} />
-      <div className="attract-kb" />
+      <HeroBg winery={winery} />
       <div className="attract-scrim" />
       <div className="brand-corner">
         <Monogram text={winery.mark} size={46} filled />
