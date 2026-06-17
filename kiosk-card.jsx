@@ -81,9 +81,10 @@ function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint
         </div>
         <h1 className="gal-name">{wine.name}</h1>
         <div className="gal-stage">
-          {wine.imageUrl
-            ? <img src={wine.imageUrl} alt={wine.name || ""} className="bottle-img gal-bottle" />
-            : <Placeholder label={wine.placeholder || ""} tint={tint} radius={10} style={{ width: 168, height: 340 }} />}
+          <div className="gal-frame">
+            <Placeholder label={wine.imageUrl ? "" : (wine.placeholder || "")} tint={tint} radius={10} style={{ position: "absolute", inset: 0 }} />
+            {wine.imageUrl && <img src={wine.imageUrl} alt={wine.name || ""} className="bottle-img gal-bottle" />}
+          </div>
         </div>
         <TastingNotes wine={wine} />
         <p className="gal-wm">"{wine.winemaker}"</p>
@@ -101,9 +102,8 @@ function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint
     return (
       <div className="card immersive">
         <div className="imm-visual">
-          {wine.imageUrl
-            ? <div className="imm-bottle"><img src={wine.imageUrl} alt={wine.name || ""} className="bottle-img" /></div>
-            : <Placeholder label={wine.placeholder || ""} tint={tint} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }} />}
+          <Placeholder label={wine.imageUrl ? "" : (wine.placeholder || "")} tint={tint} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }} />
+          {wine.imageUrl && <div className="imm-bottle"><img src={wine.imageUrl} alt={wine.name || ""} className="bottle-img" /></div>}
           <div className="imm-scrim" />
           <div className="imm-title">
             {wine.award && <span className="award light">✦ {wine.award}</span>}
@@ -129,9 +129,8 @@ function WineCard({ wine, idx, total, st, onTry, onFav, onRate, layout, showHint
   return (
     <div className="card split">
       <div className="split-visual">
-        {wine.imageUrl
-          ? <div className="split-bottle"><img src={wine.imageUrl} alt={wine.name || ""} className="bottle-img" /></div>
-          : <Placeholder label={wine.placeholder || ""} tint={tint} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }} />}
+        <Placeholder label={wine.imageUrl ? "" : (wine.placeholder || "")} tint={tint} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }} />
+        {wine.imageUrl && <div className="split-bottle"><img src={wine.imageUrl} alt={wine.name || ""} className="bottle-img" /></div>}
         <div className="split-scrim" />
         <div className="split-overlay">
           {wine.award && <span className="award light">✦ {wine.award}</span>}
