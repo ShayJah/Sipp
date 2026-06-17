@@ -105,10 +105,10 @@ function SummaryScreen({ wines = [], state, name, onEdit, onSave, priceLabel, wi
 }
 
 function TransferScreen({ onConfirm, name, wines = [], state = {}, winerySlug }) {
-  const pickedIds = wines.filter(w => state[w.id]?.tried).map(w => w.id);
-  const basePath  = winerySlug ? `/${winerySlug}/picks` : "/picks";
-  const picksUrl  = window.location.origin + basePath + (pickedIds.length ? `?ids=${pickedIds.join(",")}` : "");
-  const qrSrc     = `https://api.qrserver.com/v1/create-qr-code/?size=208x208&margin=0&data=${encodeURIComponent(picksUrl)}`;
+  const picks    = wines.filter(w => state[w.id]?.tried).map(w => `${w.id}:${state[w.id]?.rating || 0}`);
+  const basePath = winerySlug ? `/${winerySlug}/picks` : "/picks";
+  const picksUrl = window.location.origin + basePath + (picks.length ? `?picks=${encodeURIComponent(picks.join(","))}` : "");
+  const qrSrc    = `https://api.qrserver.com/v1/create-qr-code/?size=208x208&margin=0&data=${encodeURIComponent(picksUrl)}`;
   return (
     <div className="screen transfer">
       <div className="transfer-inner">

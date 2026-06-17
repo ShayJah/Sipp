@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/:slug/picks", "destination": "/api/picks?winery=:slug" }
+  ],
   "headers": [
     {
       "source": "/(.*\\.jsx)",
