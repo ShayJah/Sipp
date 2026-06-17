@@ -104,7 +104,11 @@ function SummaryScreen({ wines = [], state, name, onEdit, onSave, priceLabel, wi
   );
 }
 
-function TransferScreen({ onConfirm, name }) {
+function TransferScreen({ onConfirm, name, wines = [], state = {}, winerySlug }) {
+  const pickedIds = wines.filter(w => state[w.id]?.tried).map(w => w.id);
+  const basePath  = winerySlug ? `/${winerySlug}/picks` : "/picks";
+  const picksUrl  = window.location.origin + basePath + (pickedIds.length ? `?ids=${pickedIds.join(",")}` : "");
+  const qrSrc     = `https://api.qrserver.com/v1/create-qr-code/?size=208x208&margin=0&data=${encodeURIComponent(picksUrl)}`;
   return (
     <div className="screen transfer">
       <div className="transfer-inner">
@@ -114,7 +118,7 @@ function TransferScreen({ onConfirm, name }) {
         <div className="t-options">
           <div className="t-card qr">
             <div className="qr-frame">
-              <FauxQR size={208} seed={11} />
+              <img src={qrSrc} width={208} height={208} style={{ display: "block" }} alt="Scan to view your picks" />
               <div className="qr-corner tl" /><div className="qr-corner tr" /><div className="qr-corner bl" /><div className="qr-corner br" />
             </div>
             <span className="t-card-label">Scan with your camera</span>

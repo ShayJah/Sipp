@@ -149,9 +149,10 @@ function App() {
   const [winery, setWinery] = useState(window.WINERY);
   const [wines, setWines] = useState(window.WINES || []);
   const [loading, setLoading] = useState(false);
+  const [winerySlug] = useState(() => new URLSearchParams(location.search).get("winery") || "");
 
   useEffect(() => {
-    const slug = new URLSearchParams(location.search).get("winery");
+    const slug = winerySlug;
     if (!slug) return;
     setLoading(true);
     fetch(`/api/winery?slug=${encodeURIComponent(slug)}`)
@@ -192,7 +193,7 @@ function App() {
               <SummaryScreen wines={wines} state={taste} name={name} priceLabel={PRICE} winery={winery}
                              onEdit={() => go("lookbook")} onSave={() => go("transfer")} />
             )}
-            {screen === "transfer" && <TransferScreen name={name} onConfirm={() => go("success")} />}
+            {screen === "transfer" && <TransferScreen name={name} onConfirm={() => go("success")} wines={wines} state={taste} winerySlug={winerySlug} />}
             {screen === "success" && <SuccessScreen wines={wines} state={taste} name={name} priceLabel={PRICE} winery={winery} onReset={reset} />}
           </div>
         </div>
